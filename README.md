@@ -21,6 +21,7 @@ as.numeric(sub("^X", "", colnames(data.th)))->colnames(data.th)
 
 ```
 <h4>Apply surprisal analysis to data</h4>
+
 ```
 surprisal_analysis(data.th)->res
 res[[1]] ->lambdas_values
