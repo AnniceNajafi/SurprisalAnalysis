@@ -31,6 +31,13 @@ res[[2]] ->transcript_weights
 <h4>Plot lambdas over time</h4>
 
 ```
-plot_lambda(lambda_values, 2)
+plot_lambda(lambda_values, 2, colnames(data.th)
 ```
+<h4>Apply GO analysis on pattern</h4>
+
+```
+GO_analysis_surprisal_analysis(transcript_weights, 95, 2)
+```
+
+
 
