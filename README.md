@@ -12,7 +12,7 @@ devtools::install_github("AnniceNajafi/SurprisalAnalysis")
 
 <h4>Load example dataset</h4>
 
-Example data set can be downloaded from <a href="https://drive.google.com/file/d/1exoPw_Cnn_vNJACea68oSMTJ4Fg7DNN3/view?usp=drive_link">this link</a>
+Example data set can be downloaded from <a href="https://drive.google.com/file/d/1exoPw_Cnn_vNJACea68oSMTJ4Fg7DNN3/view?usp=drive_link">this link</a>.
 ```
 data.th <- read.csv("~/Downloads/helper_T_cell_0_test.csv", header=TRUE)
 
