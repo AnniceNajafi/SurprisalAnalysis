@@ -132,13 +132,13 @@ plot_lambda <- function(lambda_values, lambda_no, time.points){
 #' ENSEMBL, or PROBEID
 #' @param flip a boolean variable which can either be true or false, if it is
 #' set to true, the lambda values will be multipled by -1
-#' @param species.db the type of species used for GO analysis, by default set to
+#' @param species.db.str the type of species used for GO analysis, by default set to
 #' Homo sapiens, can be either org.Hs.eg.db or org.Mm.eg.db
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
 #' @return the important GO terms related to a lambda gene pattern
 #' @export
-GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db =  org.Hs.eg.db, top_GO_terms=15){
+GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  org.Hs.eg.db, top_GO_terms=15){
 
   transcript_weights->alph_all
 
@@ -155,13 +155,13 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
 
 
-  if(species.db == org.Hs.eg.db){
+  if(species.db.str == "org.Hs.eg.db"){
 
-  species.db.str <- "org.Hs.eg.db"
+  species.db <- org.Hs.eg.db
 
   }else{
 
-  species.db.str <- "org.Mm.eg.db"
+  species.db.str <- org.Mm.eg.db
 
   }
 
