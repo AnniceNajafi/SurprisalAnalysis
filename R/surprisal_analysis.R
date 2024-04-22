@@ -89,7 +89,7 @@ surprisal_analysis <- function(input.data){
 #' @export
 plot_lambda <- function(lambda_values, lambda_no, time.points){
 
-  data.frame(time = time.points, lambda = lambda_values[,lambda_no])->sur.data
+  data.frame(time = as.numeric(time.points), lambda = lambda_values[,lambda_no])->sur.data
 
   ggplot(sur.data, aes(x=time, y=lambda))+
     #geom_point(colour="#BEAEE2", shape=8, size=2, stroke = 4)+
@@ -138,7 +138,7 @@ plot_lambda <- function(lambda_values, lambda_no, time.points){
 #'
 #' @return the important GO terms related to a lambda gene pattern
 #' @export
-GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  org.Hs.eg.db, top_GO_terms=15){
+GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db", top_GO_terms=15){
 
   transcript_weights->alph_all
 
