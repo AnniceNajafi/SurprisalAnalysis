@@ -71,9 +71,9 @@ surprisal_analysis <- function(input.data){
 
   #change column names
 
-  paste("lambda", seq(1, ncol(holds), 1), sep = "_")->colnames(holds)
+  #paste("lambda", seq(1, ncol(holds), 1), sep = "_")->colnames(holds)
 
-  paste("lambda", seq(1, ncol(alph_all), 1), sep = "_")->colnames(alph_all)
+  #paste("lambda", seq(1, ncol(alph_all), 1), sep = "_")->colnames(alph_all)
 
   return(list(holds, alph_all))
 }
