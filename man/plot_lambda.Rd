@@ -4,12 +4,14 @@
 \alias{plot_lambda}
 \title{Plot lambda values over time}
 \usage{
-plot_lambda(lambda_values, lambda_no)
+plot_lambda(lambda_values, lambda_no, time.points)
 }
 \arguments{
 \item{lambda_values}{dataframe containing lambda values}
 
 \item{lambda_no}{the pattern number of interest}
+
+\item{time.points}{time points of the timecourse data}
 }
 \value{
 a plot showing lambda values over time

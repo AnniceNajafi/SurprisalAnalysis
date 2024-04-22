@@ -83,10 +83,11 @@ surprisal_analysis <- function(input.data){
 #'
 #' @param lambda_values dataframe containing lambda values
 #' @param lambda_no the pattern number of interest
+#' @param time.points time points of the timecourse data
 #'
 #' @return a plot showing lambda values over time
 #' @export
-plot_lambda <- function(lambda_values, lambda_no){
+plot_lambda <- function(lambda_values, lambda_no, time.points){
 
   data.frame(time = time.points, lambda = lambda_values[,lambda_no])->sur.data
 
