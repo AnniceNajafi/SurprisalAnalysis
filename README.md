@@ -12,6 +12,7 @@ devtools::install_github("AnniceNajafi/SurprisalAnalysis")
 
 <h4>Load example dataset</h4>
 
+Example data set can be downloaded from <a href="https://drive.google.com/file/d/1exoPw_Cnn_vNJACea68oSMTJ4Fg7DNN3/view?usp=drive_link">this link</a>
 ```
 data.th <- read.csv("~/Downloads/helper_T_cell_0_test.csv", header=TRUE)
 
@@ -24,14 +25,14 @@ as.numeric(sub("^X", "", colnames(data.th)))->colnames(data.th)
 
 ```
 surprisal_analysis(data.th)->res
-res[[1]] ->lambdas_values
+res[[1]] ->lambda_values
 res[[2]] ->transcript_weights
 ```
 
 <h4>Plot lambdas over time</h4>
 
 ```
-plot_lambda(lambda_values, 2, colnames(data.th)
+plot_lambda(lambda_values, 2, colnames(data.th))
 ```
 <h4>Apply GO analysis on pattern</h4>
 
