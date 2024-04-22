@@ -165,8 +165,9 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   }
 
+  entrez_ids <- mapIds(species.db, keys=values_above_percentile_int, column="ENTREZID", keytype=key_type)
 
-  GO_results <- enrichGO(gene = entrez_ids[!is.na(entrez_ids)], OrgDb = species.db.str, keyType=key_type, ont = "BP")
+  GO_results <- enrichGO(gene = entrez_ids[!is.na(entrez_ids)], OrgDb = species.db.str, keyType="ENTREZID", ont = "BP")
 
   head(GO_results@result, top_GO_terms)->Go.top
 
