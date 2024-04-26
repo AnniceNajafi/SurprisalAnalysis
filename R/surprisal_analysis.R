@@ -161,7 +161,7 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   }else{
 
-  species.db.str <- org.Mm.eg.db
+  species.db <- org.Mm.eg.db
 
   }
 
