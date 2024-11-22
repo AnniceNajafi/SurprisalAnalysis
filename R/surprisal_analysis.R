@@ -39,7 +39,7 @@ surprisal_analysis <- function(input.data){
   D <- diag(sqrt(eigen_decomp$values))
 
 
-  Y <- as.matrix(log(data.th))
+  Y <- as.matrix(log(input.data))
 
   #hold all lambda pattern results
   alph_lst<-list()
