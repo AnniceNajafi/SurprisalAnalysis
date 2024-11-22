@@ -1,5 +1,7 @@
 # Surprisal Analysis
 
+[![DOI](https://zenodo.org/badge/789926029.svg)](https://doi.org/10.5281/zenodo.14207246)
+
 This is an R package for applying surprisal analysis to microarray and RNAsequencing data.
 
  Please follow the instructions below to run the R package (To run the web-based application use <a href="https://najafiannice.shinyapps.io/surprisal_analysis_app/">this link</a> and utilize username: "guest" or "research" and password "1234" to login):
