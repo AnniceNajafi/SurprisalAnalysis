@@ -79,46 +79,6 @@ surprisal_analysis <- function(input.data){
 }
 
 
-#' Plot lambda values over time
-#'
-#' @param lambda_values dataframe containing lambda values
-#' @param lambda_no the pattern number of interest
-#'
-#' @return a plot showing lambda values over time
-#' @export
-plot_lambda <- function(lambda_values, lambda_no){
-
-  data.frame(time = time.points, lambda = lambda_values[,lambda_no])->sur.data
-
-  ggplot(sur.data, aes(x=time, y=lambda))+
-    #geom_point(colour="#BEAEE2", shape=8, size=2, stroke = 4)+
-    #geom_line(colour="#BEAEE2", size=2)+
-    geom_point(colour="#76ABAE", shape=8, size=2, stroke = 4)+
-    geom_line(colour="#76ABAE", size=2)+
-    labs(x="Time", y=paste0("Lambda_", lambda_no), color="Time")+
-    #ggtitle(bquote(.(data.input$CellLine)~ - TGF ~beta))+
-    ggtitle("Surprisal Analysis")+
-    #geom_hline(yintercept =0)+
-    theme(
-      # Remove panel border
-      panel.border = element_blank(),
-      # Remove panel grid lines
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      # Remove panel background
-      panel.background = element_blank(),
-      # Add axis line
-      axis.line = element_line(colour = "black"),
-      #legend.position = "none",
-      plot.title = element_text(hjust = 0.5, size=20),
-      axis.text = element_text(size = 15),
-      text = element_text(size=18)
-    )->p
-
-  return(p)
-
-}
-
 
 #' Perform Gene ontology analysis on a pattern of interest
 #'
@@ -149,7 +109,7 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   percentile_int <- quantile(alph_all[,lambda_no], percentile_GO*0.01)
 
-  # Extract values in X column that are higher than the 95th percentile of alpha_1
+  #Extract values in X column that are higher than the 95th percentile of alpha_1
   values_above_percentile_int <- toupper(rownames(alph_all))[alph_all[,lambda_no] > percentile_int]
 
 

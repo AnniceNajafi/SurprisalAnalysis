@@ -2,4 +2,5 @@
 
 export(GO_analysis_surprisal_analysis)
 export(plot_lambda)
+export(runSurprisalApp)
 export(surprisal_analysis)

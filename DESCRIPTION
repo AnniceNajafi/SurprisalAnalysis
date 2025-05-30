@@ -18,5 +18,6 @@ Imports:
   org.Hs.eg.db,
   clusterProfiler,
   AnnotationDbi,
-  tidyverse
+  tidyverse,
+  shiny
   
