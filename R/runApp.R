@@ -4,20 +4,24 @@
 #' @param host host to listen on
 #' @param launch.browser should launch a browser? set to TRUE by default
 #' @param ... Further arguments passed along to shiny::runApp
-#' @import shiny
-#' @import ggplot2
-#' @import matlib
-#' @import latex2exp
-#' @import shinythemes
-#' @import shinyjs
-#' @import shinyWidgets
-#' @import tidyverse
-#' @import shinycssloaders
-#' @import patchwork
-#' @import AnnotationDbi
-#' @import org.Mm.eg.db
+#' @importFrom shiny fluidPage navbarPage tabPanel sidebarLayout sidebarPanel
+#' @importFrom shiny fileInput selectInput checkboxInput sliderInput actionButton
+#' @importFrom shiny strong em mainPanel div p tags br fluidRow column plotOutput renderPlot
+#' @importFrom shiny downloadButton downloadHandler req observeEvent updateSliderInput updateTabsetPanel icon HTML
+#' @importFrom shinythemes shinytheme
+#' @importFrom shinyjs useShinyjs disable enable
+#' @importFrom shinycssloaders withSpinner
+#' @importFrom DT dataTableOutput renderDataTable
+#' @importFrom ggplot2 ggplot aes geom_point geom_line scale_x_continuous scale_y_continuous
+#'   labs theme_minimal theme element_blank element_line element_text geom_bar coord_flip
+#'   scale_fill_gradient xlab ylab
+#' @importFrom latex2exp TeX
+#' @importFrom AnnotationDbi mapIds
 #' @import org.Hs.eg.db
-#' @import clusterProfiler
+#' @importFrom clusterProfiler enrichGO
+#' @import patchwork
+#' @importFrom stats quantile
+#' @importFrom utils head
 #' @export
 runSurprisalApp <- function(port      = getOption("shiny.port", 3838),
                             host      = getOption("shiny.host", "127.0.0.1"),
