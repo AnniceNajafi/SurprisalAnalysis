@@ -39,7 +39,7 @@ surprisal_analysis <- function(input.data){
   D <- diag(sqrt(eigen_decomp$values))
 
 
-  Y <- as.matrix(log(data.th))
+  Y <- as.matrix(log(input.data))
 
   #hold all lambda pattern results
   alph_lst<-list()
@@ -90,12 +90,13 @@ surprisal_analysis <- function(input.data){
 #' @param key_type type of transcripts which can be either SYMBOL, ENTREZID,
 #' ENSEMBL, or PROBEID
 #' @param flip a boolean variable which can either be true or false, if it is
-#' set to true, the lambda values will be multipled by -1
+#' set to true, the lambda values will be multiplied by -1
 #' @param species.db the type of species used for GO analysis, by default set to
 #' Homo sapiens, can be either org.Hs.eg.db or org.Mm.eg.db
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
 #' @return the important GO terms related to a lambda gene pattern
+#' @importFrom AnnotationDbi
 #' @export
 GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db =  org.Hs.eg.db, top_GO_terms=15){
 

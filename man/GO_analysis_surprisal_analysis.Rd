@@ -27,7 +27,7 @@ for example 95 will run GO on transcripts in the 95th percentile and above}
 ENSEMBL, or PROBEID}
 
 \item{flip}{a boolean variable which can either be true or false, if it is
-set to true, the lambda values will be multipled by -1}
+set to true, the lambda values will be multiplied by -1}
 
 \item{species.db}{the type of species used for GO analysis, by default set to
 Homo sapiens, can be either org.Hs.eg.db or org.Mm.eg.db}

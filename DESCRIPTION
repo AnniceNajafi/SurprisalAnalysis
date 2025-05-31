@@ -18,4 +18,11 @@ Imports:
   clusterProfiler,
   AnnotationDbi,
   tidyverse,
-  shiny
+  shiny,
+  ggplot2,
+  latex2exp,
+  shinythemes,
+  shinyWidgets,
+  shinyjs,
+  shinycssloaders,
+  patchwork

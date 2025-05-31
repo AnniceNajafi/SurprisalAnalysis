@@ -1,21 +1,3 @@
-library(shiny)
-library(ggplot2)
-library(matlib)
-library(reshape2)
-library(latex2exp)
-library(shinythemes)
-library(AnnotationDbi)
-library(org.Mm.eg.db)
-library(clusterProfiler)
-library(org.Hs.eg.db)
-library(shinyjs)
-library(shinyWidgets)
-library(tidyverse)
-library(shinycssloaders)
-library(mailR)
-library(patchwork)
-
-#
 options(shiny.maxRequestSize = 2000*1024^2)
 
 turning_alphas <- function(log.mat) {

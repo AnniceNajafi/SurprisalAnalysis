@@ -4,6 +4,20 @@
 #' @param host host to listen on
 #' @param launch.browser should launch a browser? set to TRUE by default
 #' @param ... Further arguments passed along to shiny::runApp
+#' @import shiny
+#' @import ggplot2
+#' @import matlib
+#' @import latex2exp
+#' @import shinythemes
+#' @import shinyjs
+#' @import shinyWidgets
+#' @import tidyverse
+#' @import shinycssloaders
+#' @import patchwork
+#' @import AnnotationDbi
+#' @import org.Mm.eg.db
+#' @import org.Hs.eg.db
+#' @import clusterProfiler
 #' @export
 runSurprisalApp <- function(port      = getOption("shiny.port", 3838),
                             host      = getOption("shiny.host", "127.0.0.1"),
