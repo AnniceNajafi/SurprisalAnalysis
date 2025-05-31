@@ -12,13 +12,13 @@ runSurprisalApp(
 )
 }
 \arguments{
-\item{port}{Integer; port to run the app on (passed to shiny::runApp)}
+\item{port}{port to run the app on (passed to shiny::runApp)}
 
-\item{host}{Character; host to listen on}
+\item{host}{host to listen on}
 
-\item{launch.browser}{Logical; should launch a browser?}
+\item{launch.browser}{should launch a browser? set to TRUE by default}
 
-\item{...}{Further args passed along to shiny::runApp}
+\item{...}{Further arguments passed along to shiny::runApp}
 }
 \description{
 Launch the SurprisalAnalysis Shiny App
