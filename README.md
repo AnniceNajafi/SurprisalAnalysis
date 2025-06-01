@@ -1,6 +1,6 @@
 <h1>SurprisalAnalysis R package guidelines</h1>
 
-<h3>Installation</h3>
+<h2>🖥️ Installation </h2>
 
 To install the R package:
 
@@ -9,7 +9,7 @@ install.packages('devtools')
 devtools::install_github('AnniceNajafi/SurprisalAnalysis')
 ```
 
-<h3>Usage</h3>
+<h2>Usage</h2>
 
 
 To use the R package you should follow the steps below:
@@ -38,7 +38,7 @@ GO_analysis_surprisal_analysis(transcript_weights, percentile_GO, lambda_no, key
 
 ```
 
-<h3>Use GUI from R package</h3>
+<h2>Use GUI from R package</h2>
 
 Simply run the following code:
 
@@ -47,12 +47,14 @@ runSurprisalApp()
 ```
 
 
-<h3>Web-based application</h3>
+<h2>Web-based application</h2>
 
 A web-based application based on the above has been deployed on <a href = "https://najafiannice.shinyapps.io/surprisal_analysis_app/">this link</a>.
 
 
 
+<h3>Open source disclaimer</h3>
+This is an open-source project based on a previously developed methodology. Requests or attempts on the expansion and further improvement of the code is welcome and encouraged. 
 
 
 
