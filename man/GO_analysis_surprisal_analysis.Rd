@@ -10,7 +10,7 @@ GO_analysis_surprisal_analysis(
   lambda_no,
   key_type = "SYMBOL",
   flip = FALSE,
-  species.db = org.Hs.eg.db,
+  species.db = "org.Hs.eg.db",
   top_GO_terms = 15
 )
 }

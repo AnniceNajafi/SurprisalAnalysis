@@ -4,6 +4,7 @@
 #'
 #' @return a list containing the lambda values and corresponding weights of
 #' transcripts stored
+#' @importFrom matlib inv
 #' @export
 surprisal_analysis <- function(input.data){
 
@@ -11,7 +12,7 @@ surprisal_analysis <- function(input.data){
 
   input.data->my.mat.filtered
 
-  log(my.mat.filtered)->my.mat.sa #take the log
+  log(my.mat.filtered[,2:ncol(my.mat.filtered)])->my.mat.sa #take the log
 
   hold.mat <- matrix(NA, nrow = ncol(my.mat.sa), ncol = ncol(my.mat.sa)) #create matrix to hold lambda results
 
@@ -39,7 +40,7 @@ surprisal_analysis <- function(input.data){
   D <- diag(sqrt(eigen_decomp$values))
 
 
-  Y <- as.matrix(log(input.data))
+  Y <- as.matrix(my.mat.sa)
 
   #hold all lambda pattern results
   alph_lst<-list()
@@ -71,9 +72,13 @@ surprisal_analysis <- function(input.data){
 
   #change column names
 
-  paste("lambda", seq(1, ncol(holds), 1), sep = "_")->holds
+  paste("lambda", seq(1, ncol(holds), 1), sep = "_")->colnames(holds)
 
-  paste("lambda", seq(1, ncol(alph_all), 1), sep = "_")->alph_all
+  colnames(holds)->rownames(holds)
+
+  paste("lambda", seq(1, ncol(alph_all), 1), sep = "_")->colnames(alph_all)
+
+  rownames(alph_all)<-input.data[,1]
 
   return(list(holds, alph_all))
 }
@@ -96,9 +101,14 @@ surprisal_analysis <- function(input.data){
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
 #' @return the important GO terms related to a lambda gene pattern
-#' @importFrom AnnotationDbi
+#' @import org.Hs.eg.db
+#' @import org.Mm.eg.db
+#' @importFrom AnnotationDbi mapIds
+#' @importFrom clusterProfiler enrichGO
+#' @importFrom stats quantile
+#' @importFrom utils head
 #' @export
-GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db =  org.Hs.eg.db, top_GO_terms=15){
+GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db =  "org.Hs.eg.db", top_GO_terms=15){
 
   transcript_weights->alph_all
 
@@ -115,18 +125,19 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
 
 
-  if(species.db == org.Hs.eg.db){
+  if(species.db.str == "org.Hs.eg.db"){
 
-  species.db.str <- "org.Hs.eg.db"
+  species.db <- org.Hs.eg.db
 
   }else{
 
-  species.db.str <- "org.Mm.eg.db"
+  species.db <- org.Mm.eg.db
 
   }
 
+  entrez_ids <- tryCatch(mapIds(species.db, keys=ids,column="ENTREZID",keytype=kt,multiVals="first"),error=function(e)NULL)
 
-  GO_results <- enrichGO(gene = entrez_ids[!is.na(entrez_ids)], OrgDb = species.db.str, keyType=key_type, ont = "BP")
+  GO_results <- enrichGO(gene = entrez_ids[!is.na(entrez_ids)], OrgDb = species.db, keyType=key_type, ont = "BP")
 
   head(GO_results@result, top_GO_terms)->Go.top
 
