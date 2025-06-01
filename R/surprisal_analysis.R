@@ -108,7 +108,7 @@ surprisal_analysis <- function(input.data){
 #' @importFrom stats quantile
 #' @importFrom utils head
 #' @export
-GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db =  "org.Hs.eg.db", top_GO_terms=15){
+GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db", top_GO_terms=15){
 
   transcript_weights->alph_all
 
@@ -124,7 +124,6 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
   values_above_percentile_int <- toupper(rownames(alph_all))[alph_all[,lambda_no] > percentile_int]
 
 
-
   if(species.db.str == "org.Hs.eg.db"){
 
   species.db <- org.Hs.eg.db
@@ -135,9 +134,9 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   }
 
-  entrez_ids <- tryCatch(mapIds(species.db, keys=ids,column="ENTREZID",keytype=kt,multiVals="first"),error=function(e)NULL)
+  entrez_ids <- tryCatch(mapIds(species.db, keys=values_above_percentile_int,column="ENTREZID",keytype=key_type,multiVals="first"),error=function(e)NULL)
 
-  GO_results <- enrichGO(gene = entrez_ids[!is.na(entrez_ids)], OrgDb = species.db, keyType=key_type, ont = "BP")
+  GO_results <-enrichGO(gene=entrez_ids, OrgDb=species.db,keyType="ENTREZID",ont="BP")
 
   head(GO_results@result, top_GO_terms)->Go.top
 

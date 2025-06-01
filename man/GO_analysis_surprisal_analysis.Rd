@@ -10,7 +10,7 @@ GO_analysis_surprisal_analysis(
   lambda_no,
   key_type = "SYMBOL",
   flip = FALSE,
-  species.db = "org.Hs.eg.db",
+  species.db.str = "org.Hs.eg.db",
   top_GO_terms = 15
 )
 }
@@ -29,10 +29,10 @@ ENSEMBL, or PROBEID}
 \item{flip}{a boolean variable which can either be true or false, if it is
 set to true, the lambda values will be multiplied by -1}
 
+\item{top_GO_terms}{number of GO terms returns, by default set to 15}
+
 \item{species.db}{the type of species used for GO analysis, by default set to
 Homo sapiens, can be either org.Hs.eg.db or org.Mm.eg.db}
-
-\item{top_GO_terms}{number of GO terms returns, by default set to 15}
 }
 \value{
 the important GO terms related to a lambda gene pattern
