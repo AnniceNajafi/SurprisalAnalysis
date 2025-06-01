@@ -96,8 +96,8 @@ surprisal_analysis <- function(input.data){
 #' ENSEMBL, or PROBEID
 #' @param flip a boolean variable which can either be true or false, if it is
 #' set to true, the lambda values will be multiplied by -1
-#' @param species.db the type of species used for GO analysis, by default set to
-#' Homo sapiens, can be either org.Hs.eg.db or org.Mm.eg.db
+#' @param species.db.str the type of species used for GO analysis, by default set to
+#' Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'.
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
 #' @return the important GO terms related to a lambda gene pattern
@@ -128,10 +128,12 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   species.db <- org.Hs.eg.db
 
-  }else{
+  }else if(species.db.str == 'org.Mm.eg.db'){
 
   species.db <- org.Mm.eg.db
 
+  }else{
+    stop('Please enter either "org.Hs.eg.db" or "org.Mm.eg.db".')
   }
 
   entrez_ids <- tryCatch(mapIds(species.db, keys=values_above_percentile_int,column="ENTREZID",keytype=key_type,multiVals="first"),error=function(e)NULL)

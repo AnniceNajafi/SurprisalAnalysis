@@ -20,6 +20,10 @@
 #' @import org.Hs.eg.db
 #' @importFrom clusterProfiler enrichGO
 #' @import patchwork
+#' @import shinyWidgets
+#' @import dplyr
+#' @import tidyr
+#' @import tidyverse
 #' @importFrom stats quantile
 #' @importFrom utils head
 #' @export
