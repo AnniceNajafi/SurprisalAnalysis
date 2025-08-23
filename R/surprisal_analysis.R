@@ -1,18 +1,35 @@
 #' This function performs surprisal analysis on transcriptomics data
 #'
 #' @param input.data transcriptomics data stores as dataframe
-#'
+#' @param zero.handling zero handling method. Can be either 'pseudocount' or
+#' 'log1p'. By default it is set to 'pseudocount'.
 #' @return a list containing the lambda values and corresponding weights of
 #' transcripts stored
 #' @importFrom matlib inv
 #' @export
-surprisal_analysis <- function(input.data){
+surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 
-  input.data[input.data==0]<-0.000001 #replace zero values to avoid undefined issues when taking the log later
 
-  input.data->my.mat.filtered
+  #input.data[input.data==0]<-0.000001 #replace zero values to avoid undefined issues when taking the log later
+  if(zero.handling == 'pseudocount'){
 
-  log(my.mat.filtered[,2:ncol(my.mat.filtered)])->my.mat.sa #take the log
+    my.mat.filtered <- input.data
+    my.mat.filtered[,2:ncol(my.mat.filtered)] <- input.data[,2:ncol(input.data)] + 1e-6
+
+    log(my.mat.filtered[,2:ncol(my.mat.filtered)])->my.mat.sa #take the log
+
+
+  }else if(zero.handling == 'log1p'){
+
+    input.data->my.mat.filtered
+
+    my.mat.sa <- log1p(my.mat.filtered[, 2:ncol(my.mat.filtered)])
+  }else{
+
+    message("Error. Please choose a valid zero handling method.")
+
+  }
+
 
   hold.mat <- matrix(NA, nrow = ncol(my.mat.sa), ncol = ncol(my.mat.sa)) #create matrix to hold lambda results
 
@@ -98,6 +115,10 @@ surprisal_analysis <- function(input.data){
 #' set to true, the lambda values will be multiplied by -1
 #' @param species.db.str the type of species used for GO analysis, by default set to
 #' Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'.
+#' @param ont the ontology term for GO enrichment analysis. Can be either "BP", "MF" or "CC".
+#' They stand for "Biological Process", "Molecular Function" or "Cellular Component". Set to "BP" by default
+#' @param pAdjustMethod multiple testing correction method. Could be one of "BH", "bonferroni",
+#' "holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH".
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
 #' @return the important GO terms related to a lambda gene pattern
@@ -108,7 +129,8 @@ surprisal_analysis <- function(input.data){
 #' @importFrom stats quantile
 #' @importFrom utils head
 #' @export
-GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db", top_GO_terms=15){
+GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db",
+                                           ont = "BP", pAdjustMethod = "BH", top_GO_terms=15){
 
   transcript_weights->alph_all
 
@@ -138,7 +160,7 @@ GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, la
 
   entrez_ids <- tryCatch(mapIds(species.db, keys=values_above_percentile_int,column="ENTREZID",keytype=key_type,multiVals="first"),error=function(e)NULL)
 
-  GO_results <-enrichGO(gene=entrez_ids, OrgDb=species.db,keyType="ENTREZID",ont="BP")
+  GO_results <-enrichGO(gene=entrez_ids, OrgDb=species.db,keyType="ENTREZID",ont=ont, pAdjustMethod = pAdjustMethod)
 
   head(GO_results@result, top_GO_terms)->Go.top
 

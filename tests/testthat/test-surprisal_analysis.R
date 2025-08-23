@@ -2,7 +2,7 @@ library(testthat)
 
 test_that("The surprisal analysis function works for a valid csv file.", {
 
-  data <- read.csv(system.file("extdata", "sample_expression.csv", package = "SurprisalAnalysis"), header=FALSE)
+  data <- read.csv(system.file("extdata", "sample_expression.csv", package = "SurprisalAnalysis"), header=TRUE)
 
   results <- surprisal_analysis(data)
 

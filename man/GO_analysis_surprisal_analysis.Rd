@@ -11,6 +11,8 @@ GO_analysis_surprisal_analysis(
   key_type = "SYMBOL",
   flip = FALSE,
   species.db.str = "org.Hs.eg.db",
+  ont = "BP",
+  pAdjustMethod = "BH",
   top_GO_terms = 15
 )
 }
@@ -31,6 +33,12 @@ set to true, the lambda values will be multiplied by -1}
 
 \item{species.db.str}{the type of species used for GO analysis, by default set to
 Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'.}
+
+\item{ont}{the ontology term for GO enrichment analysis. Can be either "BP", "MF" or "CC".
+They stand for "Biological Process", "Molecular Function" or "Cellular Component". Set to "BP" by default}
+
+\item{pAdjustMethod}{multiple testing correction method. Could be one of "BH", "bonferroni",
+"holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH".}
 
 \item{top_GO_terms}{number of GO terms returns, by default set to 15}
 }

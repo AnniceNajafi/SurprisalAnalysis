@@ -4,10 +4,13 @@
 \alias{surprisal_analysis}
 \title{This function performs surprisal analysis on transcriptomics data}
 \usage{
-surprisal_analysis(input.data)
+surprisal_analysis(input.data, zero.handling = "pseudocount")
 }
 \arguments{
 \item{input.data}{transcriptomics data stores as dataframe}
+
+\item{zero.handling}{zero handling method. Can be either 'pseudocount' or
+'log1p'. By default it is set to 'pseudocount'.}
 }
 \value{
 a list containing the lambda values and corresponding weights of

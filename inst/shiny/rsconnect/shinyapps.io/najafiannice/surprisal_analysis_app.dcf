@@ -5,7 +5,7 @@ account: najafiannice
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11727805
-bundleId: 8877259
+bundleId:
 url: https://najafiannice.shinyapps.io/surprisal_analysis_app/
 version: 1
 asMultiple: FALSE
