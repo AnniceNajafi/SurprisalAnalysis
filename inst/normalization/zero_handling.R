@@ -11,7 +11,7 @@
 #' @param pc the pseudocount
 #'
 #' @return two plots, the Bland Altman plot and the density plot
-plot.norm.diffs <- function(aa, pc){
+plot.norm.diffs <- function(X, pc){
 
 
   mat_logpc <- log(X + pc)
@@ -24,7 +24,7 @@ plot.norm.diffs <- function(aa, pc){
     Avg  = as.vector(avg_vals),
     Diff = as.vector(diff_vals)
   )
-
+  print(df_ba)
 
   p_ba <- ggplot(df_ba, aes(x = Avg, y = Diff)) +
     geom_point(size = 0.8, color = "darkred") +
@@ -69,29 +69,19 @@ plot.norm.diffs <- function(aa, pc){
   return(p_ba + p_density)
 }
 
-#pseudocount
 pc <- 1e-6
 
-plot.norm.diffs(testing.case.1, pc)
-plot.norm.diffs(testing.case.2, pc)
 
 
-plt.A/plt.B
+df <- read.table(system.file("extdata", "GSE60450_Lactation-GenewiseCounts.txt", package = "SurprisalAnalysis"),header = TRUE, sep = "\t", check.names = FALSE)
 
 
+df[,3:ncol(df)]->testing.case.1
+
+df$EntrezGeneID->rownames(testing.case.1)
 
 
-read.csv("~/Downloads/GSE60450_Lactation-GenewiseCounts.csv")->testing.case.1
-
-rownames(testing.case.1)<- testing.case.1[,1]
-
-testing.case.1[,2:ncol(testing.case.1)]->testing.case.1
-
-
-
-df <- read.table("~/Downloads/GSE60450_Lactation-GenewiseCounts (1).txt",
-                 header = TRUE, sep = "\t", check.names = FALSE)
-
+as.matrix(testing.case.1)->testing.case.1
 
 stopifnot(all(c("EntrezGeneID","Length") %in% names(df)))
 
@@ -136,11 +126,11 @@ plot.norm.diffs(testing.case.3, pc)
 
 
 baseline <- data.frame(raw = surprisal_analysis(testing.case.1)[[1]][,1],
-           fpkm = surprisal_analysis(testing.case.2)[[1]][,1],
-           tpm = surprisal_analysis(testing.case.3)[[1]][,1])
+                       fpkm = surprisal_analysis(testing.case.2)[[1]][,1],
+                       tpm = surprisal_analysis(testing.case.3)[[1]][,1])
 
-baseline.pseudo <-
-  ggplot(baseline)+
+
+baseline.pseudo <- ggplot(baseline)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -160,14 +150,14 @@ baseline.pseudo <-
   labs(x="Sample", title=TeX("$\\lambda_0$"), y="Value",colour="Normalization")
 
 
-
+baseline.pseudo
 
 lambda_1 <- data.frame(raw = surprisal_analysis(testing.case.1)[[1]][,2],
                        fpkm = surprisal_analysis(testing.case.2)[[1]][,2],
                        tpm = surprisal_analysis(testing.case.3)[[1]][,2])
 
-lambda.1.pseudo <-
-  ggplot(lambda_1)+
+
+lambda_1.pseudo <- ggplot(lambda_1)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -187,14 +177,14 @@ lambda.1.pseudo <-
   labs(x="Sample", title=TeX("$\\lambda_1$"), y="Value",colour="Normalization")
 
 
-
+lambda_1.pseudo
 
 lambda_2 <- data.frame(raw = surprisal_analysis(testing.case.1)[[1]][,3],
                        fpkm = surprisal_analysis(testing.case.2)[[1]][,3],
                        tpm = surprisal_analysis(testing.case.3)[[1]][,3])
 
-lambda_2.pseudo <-
-  ggplot(lambda_2)+
+
+lambda_2.pseudo <-   ggplot(lambda_2)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -214,15 +204,15 @@ lambda_2.pseudo <-
   labs(x="Sample", title=TeX("$\\lambda_2$"), y="Value",colour="Normalization")
 
 
-
+lambda_2.pseudo
 
 
 baseline <- data.frame(raw = surprisal_analysis(testing.case.1, "log1p")[[1]][,1],
                        fpkm = surprisal_analysis(testing.case.2, "log1p")[[1]][,1],
                        tpm = surprisal_analysis(testing.case.3, "log1p")[[1]][,1])
 
-baseline.log1p <-
-  ggplot(baseline)+
+
+baseline.log1p <-  ggplot(baseline)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -242,14 +232,14 @@ baseline.log1p <-
   labs(x="Sample", title=TeX("$\\lambda_0$"), y="Value",colour="Normalization")
 
 
-
+baseline.log1p
 
 lambda_1 <- data.frame(raw = surprisal_analysis(testing.case.1, "log1p")[[1]][,2],
                        fpkm = surprisal_analysis(testing.case.2, "log1p")[[1]][,2],
                        tpm = surprisal_analysis(testing.case.3, "log1p")[[1]][,2])
 
-lambda.1.log1p <-
-  ggplot(lambda_1)+
+
+lambda_1.log1p <- ggplot(lambda_1)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -269,15 +259,15 @@ lambda.1.log1p <-
   labs(x="Sample", title=TeX("$\\lambda_1$"), y="Value",colour="Normalization")
 
 
-
+lambda_1.log1p
 
 
 lambda_2 <- data.frame(raw = surprisal_analysis(testing.case.1, "log1p")[[1]][,3],
                        fpkm = surprisal_analysis(testing.case.2, "log1p")[[1]][,3],
                        tpm = surprisal_analysis(testing.case.3, "log1p")[[1]][,3])
 
-lambda_2.log1p<-
-  ggplot(lambda_2)+
+
+lambda_2.log1p <- ggplot(lambda_2)+
   geom_line(aes(x=1:nrow(baseline), y=raw, colour="Raw"), size=1)+
   geom_point(aes(x=1:nrow(baseline), y=raw, colour="Raw"), shape=8, stroke=1)+
   geom_line(aes(x=1:nrow(baseline), y=fpkm, color = "FPKM Normalized"), size=1)+
@@ -297,9 +287,9 @@ lambda_2.log1p<-
   labs(x="Sample", title=TeX("$\\lambda_2$"), y="Value",colour="Normalization")
 
 
+lambda_2.log1p
 
-
-(baseline.pseudo+baseline.log1p)/(lambda.1.pseudo+lambda.1.log1p)/(lambda_2.pseudo+lambda_2.log1p)
+#(baseline.pseudo+baseline.log1p)/(lambda.1.pseudo+lambda.1.log1p)/(lambda_2.pseudo+lambda_2.log1p)
 
 
 
@@ -320,17 +310,17 @@ testing.case.2.pseudo <- GO_analysis_surprisal_analysis(surprisal_analysis(runni
 
 
 
-ggplot(testing.case.2.pseudo, aes(x = reorder(Description, -Count), y = Count, fill = p.adjust)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_gradient(low = "steelblue", high = "red") +
-  labs(
-    title = "Top 15 Enriched GO Terms",
-    x = "GO Term",
-    y = "Gene Count",
-    fill = "Adj. p-value"
-  ) +
-  theme_minimal(base_size = 14)
+#ggplot(testing.case.2.pseudo, aes(x = reorder(Description, -Count), y = Count, fill = p.adjust)) +
+#geom_col() +
+#coord_flip() +
+#scale_fill_gradient(low = "steelblue", high = "red") +
+#labs(
+#  title = "Top 15 Enriched GO Terms",
+#  x = "GO Term",
+#  y = "Gene Count",
+#  fill = "Adj. p-value"
+#) +
+#theme_minimal(base_size = 14)
 
 
 
@@ -351,6 +341,18 @@ extreme_pct_lambda <- function(sa_mat, lambda_col = "lambda_1", p = 0.05) {
 
   return(sort(unique(c(top_ids, bot_ids))))
 }
+
+
+
+sa1_log1p <- surprisal_analysis(running.test.case.1, "log1p")[[2]]
+sa1_pc    <- surprisal_analysis(running.test.case.1, "pseudocount")[[2]]
+
+
+sa2_log1p <- surprisal_analysis(running.test.case.2, "log1p")[[2]]
+sa2_pc    <- surprisal_analysis(running.test.case.2, "pseudocount")[[2]]
+
+sa3_log1p <- surprisal_analysis(running.test.case.3, "log1p")[[2]]
+sa3_pc    <- surprisal_analysis(running.test.case.3, "pseudocount")[[2]]
 
 
 set1_log1p <- extreme_pct_lambda(sa1_log1p, "lambda_1", 0.05)
@@ -464,8 +466,6 @@ pheatmap::pheatmap(
   fontsize_row = 10, fontsize_col = 10, border_color = NA,
   color = colorRampPalette(c("#1B3C53", "#456882", "#91C8E4"))(100)
 )
-
-
 
 
 
