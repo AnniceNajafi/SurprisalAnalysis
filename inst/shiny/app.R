@@ -8,8 +8,9 @@ library(latex2exp)
 library(DT)
 library(shinycssloaders)
 library(clusterProfiler)
-library(org.Hs.eg.db)
 library(AnnotationDbi)
+library(org.Hs.eg.db)
+library(org.Mm.eg.db)
 library(patchwork)
 
 find_demo_file <- function(fname, pkg = "SurprisalAnalysis") {
@@ -56,14 +57,12 @@ detect_id_type <- function(id_vec, sample_n = 500, min_conf = 0.20) {
   ens_like    <- pct(grepl("^ENSG\\d+", x))
   entrez_like <- pct(grepl("^\\d+$", x))
   sym_like    <- pct(grepl("^[A-Z0-9\\-\\.]+$", x) & !grepl("^ENSG\\d+|^\\d+$", x))
-
   if (ens_like    >= 0.80) return("Ensembl")
   if (entrez_like >= 0.80) return("Entrez Id")
   regex_hint <- if (sym_like >= 0.80) "Gene Symbol" else NA_character_
 
   keytypes_try <- c(ENSEMBL = "Ensembl", ENTREZID = "Entrez Id",
                     SYMBOL  = "Gene Symbol", PROBEID = "Probe Id")
-
   scores <- vapply(names(keytypes_try), function(kt) {
     m <- tryCatch(
       AnnotationDbi::mapIds(org.Hs.eg.db, keys = x, column = "ENTREZID",
@@ -72,17 +71,39 @@ detect_id_type <- function(id_vec, sample_n = 500, min_conf = 0.20) {
     )
     mean(!is.na(m))
   }, numeric(1))
-
   best_kt <- names(scores)[which.max(scores)]
   best_ui <- keytypes_try[[best_kt]]
   if (!is.na(regex_hint) && scores[best_kt] < min_conf) return(regex_hint)
   if (scores[best_kt] >= min_conf) best_ui else "Gene Symbol"
 }
 
-# Core linear algebra for surprisal
+is_counts_like <- function(mat) {
+  x <- as.numeric(mat)
+  x <- x[is.finite(x)]
+  if (!length(x)) return(FALSE)
+  if (any(x < 0, na.rm = TRUE)) return(FALSE)
+  int_frac <- mean(abs(x - round(x)) < 1e-8)
+  dyn_range <- quantile(x, 0.99, na.rm = TRUE) - quantile(x, 0.01, na.rm = TRUE)
+  max_val <- max(x, na.rm = TRUE)
+  (int_frac >= 0.70 && (max_val >= 50 || dyn_range >= 50))
+}
+
+apply_transform <- function(mat, method = c("Auto", "log1p", "pseudocount"), pseudocount = 1e-6) {
+  method <- match.arg(method)
+  if (method == "Auto") method <- if (is_counts_like(mat)) "log1p" else "pseudocount"
+  m <- as.matrix(mat)
+  storage.mode(m) <- "double"
+  if (method == "log1p") {
+    if (any(m < -1, na.rm = TRUE)) stop("log1p transform invalid for values < -1.")
+    log1p(m)
+  } else {
+    m[m <= 0] <- 0
+    log(m + pseudocount)
+  }
+}
+
 turning_alphas <- function(log.mat) {
   mat <- as.matrix(log.mat)
-  # don't touch zeros here; upstream transform ensures valid logs
   C <- crossprod(mat)
   ed <- eigen(C)
   P <- ed$vectors
@@ -96,41 +117,6 @@ turning_alphas <- function(log.mat) {
   list(holds, alph_all)
 }
 
-# ---- NEW: data-scale detection & transformation helpers ----------------------
-
-# Heuristic: counts-like if nonnegative, large-ish dynamic range, mostly integers.
-is_counts_like <- function(mat) {
-  x <- as.numeric(mat)
-  x <- x[is.finite(x)]
-  if (!length(x)) return(FALSE)
-  if (any(x < 0, na.rm = TRUE)) return(FALSE)
-  int_frac <- mean(abs(x - round(x)) < 1e-8)
-  dyn_range <- quantile(x, 0.99, na.rm = TRUE) - quantile(x, 0.01, na.rm = TRUE)
-  max_val <- max(x, na.rm = TRUE)
-  (int_frac >= 0.70 && (max_val >= 50 || dyn_range >= 50))
-}
-
-# Apply selected (or auto) transform; returns log-scale numeric matrix
-apply_transform <- function(mat, method = c("Auto", "log1p", "pseudocount"), pseudocount = 1e-6) {
-  method <- match.arg(method)
-  if (method == "Auto") {
-    method <- if (is_counts_like(mat)) "log1p" else "pseudocount"
-  }
-  m <- as.matrix(mat)
-  storage.mode(m) <- "double"
-  if (method == "log1p") {
-    # Works well for counts (including zeros)
-    if (any(m < -1, na.rm = TRUE)) stop("log1p transform invalid for values < -1.")
-    return(log1p(m))
-  } else {
-    # Pseudocount log; protect only zeros to preserve scale
-    m[m <= 0] <- 0  # avoid taking log of negatives; you can adjust if needed
-    return(log(m + pseudocount))
-  }
-}
-
-# -----------------------------------------------------------------------------
-
 ui <- fluidPage(
   theme = shinytheme("yeti"),
   useShinyjs(),
@@ -143,7 +129,10 @@ ui <- fluidPage(
       border-top: 1px solid #76ABAE !important;
       border-bottom: 1px solid #76ABAE !important;
     }
+    .sa-warn { margin: 8px 0 0 0; }
   ")),
+
+  uiOutput("warnbar"),
 
   navbarPage(
     "Surprisal Analysis", id = "sur",
@@ -152,28 +141,30 @@ ui <- fluidPage(
       "Instructions",
       sidebarLayout(
         sidebarPanel(
-          fileInput("data_in", "Please upload a gene expression matrix csv file."),
+          fileInput("data_in", "Please upload a gene expression matrix CSV file."),
           actionButton(
             "load_demo",
             strong(em("Load demo dataset")),
             style = "color:#000;background-color:#76ABAE;border-color:#76ABAE;width:100%;margin-bottom:8px;"
           ),
-          helpText("Tip: If you don't have a file, click the button above to auto-load the demo data."),
+          helpText("Tip: If you don't have a file, click above to auto-load the demo."),
           div(style="margin-top:6px; font-style:italic;",
               "Ready file: ", textOutput("ready_name", inline = TRUE)),
           tags$hr(),
           selectInput("data_type", "Select biomarker input type.",
                       choices = c("Ensembl","Entrez Id","Gene Symbol","Probe Id")),
-          # ---- NEW: transformation control
-          selectInput(
-            "transform_method",
-            "Transformation",
-            choices = c("Auto", "log1p", "Log with pseudocount"),
-            selected = "Auto"
-          ),
-          helpText(HTML(
-            "Auto: picks <b>log1p</b> for counts-like data; otherwise <b>Log with pseudocount</b>."
-          )),
+          selectInput("transform_method", "Transformation",
+                      choices = c("Auto", "log1p", "Log with pseudocount"), selected = "Auto"),
+          selectInput("species_db", "Species (OrgDb)",
+                      choices = c("Human (org.Hs.eg.db)" = "org.Hs.eg.db",
+                                  "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db"),
+                      selected = "org.Hs.eg.db"),
+          selectInput("go_ont", "GO ontology",
+                      choices = c("Biological Process"="BP","Molecular Function"="MF","Cellular Component"="CC"),
+                      selected = "BP"),
+          selectInput("padj_method", "P adjustment method",
+                      choices = c("BH","bonferroni","holm","hochberg","hommel","BY","none"),
+                      selected = "BH"),
           checkboxInput("lambda1_check", "Flip lambda 1 value"),
           sliderInput("percentile_GO", "GO transcript percentile",
                       min = 80, max = 95, value = 95, step = 1, ticks = FALSE),
@@ -184,17 +175,21 @@ ui <- fluidPage(
           div(
             style = "border:1px solid #78A2A5;background:#E4EEEF;padding:20px;text-align:justify;",
             p(strong("Welcome!")),
-            p("I. Upload a csv file on the left, or click 'Load demo dataset' to auto-load ",
-              strong("helper_T_cell_0_test.csv"), "."),
-            p("II. The first column of the csv will be used as gene names and all other columns as samples, in the order provided."),
-            p("III. An example of the input data is provided below and under the 'Sample Files' tab."),
+            p("I. Upload a CSV with genes as rows and samples as columns, or click 'Load demo dataset'."),
+            p("II. The first column must be gene IDs; all other columns are samples."),
             tags$img(src = 'sample_file.png', height = 200, width = 500),
-            p("IV. Please ensure that you select the correct identifier type according to your transcript column."),
-            p("V. The application performs GO enrichment analysis on the genes that contribute most strongly to each surprisal pattern. Gene “importance” is quantified by their weights in the corresponding transcript weight vector (G₁ for pattern 1, G₂ for pattern 2).
-
-You can use the percentile slider on the left to select the cutoff. For example, if the slider is set to 95%, only genes whose weights fall within the top 5% (95th percentile and above) of the chosen pattern are included in the GO analysis.
-
-If the “Flip λ₁” option is selected, the weights for pattern 1 are inverted before percentile selection, ensuring the “top” genes correspond to the same direction seen in the λ plots."),
+            p("III. Choose the correct identifier type and species for GO analysis."),
+            p("IV. Choose a transformation: Auto (log1p for counts-like, otherwise log with pseudocount), log1p, or log+pseudocount."),
+            p("V. GO uses genes above the chosen percentile of the selected surprisal pattern (λ)."),
+            p("GO transcript percentile (slider) chooses the cutoff for “top contributors” to the selected pattern (λ₁ or λ₂).
+Example: 95% = take genes whose weights are in the top 5% of that pattern."),
+            p("Flip λ₁ direction (checkbox) multiplies λ₁ (and thus the ranking direction) by −1
+              so “top” genes match the visual direction of your λ₁ plot. It does NOT change the statistics, only which tail you enrich."),
+            p("Identifier type (Ensembl / Entrez Id / Gene Symbol / Probe Id)
+Tells the app how your first column is formatted so it can map to
+              Entrez IDs (which enrichGO uses). Pick the type that matches your input file. Note that the app will try to match the
+              type based on your file automatically."),
+            p("You can adjust the p value adjustment method, or the GO ontology category on the instructions page prior to submission."),
             p(strong("Surprisal Analysis Applications:")),
             tags$a(href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0108549",
                    "Kravchenko-Balasha N et al. PLoS ONE. 2014;9(11):e108549."), br(), br(),
@@ -211,7 +206,7 @@ If the “Flip λ₁” option is selected, the weights for pattern 1 are invert
 
     tabPanel(
       "Results",
-      h4("Lambda values over time"),
+      h4("Lambda values over samples"),
       sliderInput("tick_size","Tick label size",min=2,max=30,value=12,step=1),
       fluidRow(
         column(4, sliderInput("y_range0","λ₀ Y-axis range",min=0,max=1,value=c(0,1),step=0.1)),
@@ -240,11 +235,12 @@ If the “Flip λ₁” option is selected, the weights for pattern 1 are invert
       sliderInput("terms_2","Top terms:",min=10,max=30,value=15),
       h4("Stable state transcript stability"),
       plotOutput("stabPlot") %>% withSpinner(color="#76ABAE")
+
     ),
 
     tabPanel(
       "Sample Files",
-      p("Please use the links below to download example files:", br(),
+      p("Download example files:", br(),
         tags$a(href="https://drive.google.com/file/d/1exoPw_Cnn_vNJACea68oSMTJ4Fg7DNN3/view?usp=sharing","Th0 In-vitro polarization"),
         br(),
         tags$a(href="https://drive.google.com/file/d/1y_5rGlPK52JAeiQnX6YqxNGDvpQqvAFq/view","Th1 In-vitro polarization")
@@ -266,6 +262,25 @@ server <- function(input, output, session) {
   disable("submit")
   data_path <- reactiveVal(NULL)
 
+  warn <- reactiveVal("")
+  set_warn <- function(msg) {
+    warn(msg)
+    showNotification(msg, type = "error", duration = 8)
+  }
+  clear_warn <- function() warn("")
+
+  output$warnbar <- renderUI({
+    req(nzchar(warn()))
+    div(class = "alert alert-warning alert-dismissible sa-warn",
+        style = "border:1px solid #f0ad4e;",
+        tags$button(type="button", class="close", `data-dismiss`="alert",
+                    onclick = "Shiny.setInputValue('dismiss_warn', Math.random());",
+                    HTML("&times;")),
+        strong("Heads up: "), warn()
+    )
+  })
+  observeEvent(input$dismiss_warn, { clear_warn() }, ignoreInit = TRUE)
+
   output$ready_name <- renderText({
     x <- data_path(); if (is.null(x)) "none" else basename(x)
   })
@@ -275,8 +290,6 @@ server <- function(input, output, session) {
       detected <- detect_id_type(rownames(dt_head))
       updateSelectInput(session, "data_type", selected = detected)
       showNotification(paste("Detected identifier type:", detected), type = "message", duration = 4)
-
-      # ---- NEW: auto-select transform
       tf <- if (is_counts_like(as.matrix(dt_head))) "log1p" else "Log with pseudocount"
       updateSelectInput(session, "transform_method", selected = "Auto")
       showNotification(paste("Auto will use:", tf), type = "message", duration = 4)
@@ -287,7 +300,6 @@ server <- function(input, output, session) {
     validate(need(!is.null(input$data_in$datapath), "No file found."))
     data_path(input$data_in$datapath)
     enable("submit")
-
     dt_head <- tryCatch(read.csv(input$data_in$datapath, row.names = 1,
                                  check.names = FALSE, nrows = 2000),
                         error = function(e) NULL)
@@ -300,8 +312,8 @@ server <- function(input, output, session) {
       showModal(modalDialog(
         title = "Demo file not found",
         HTML("I looked for <code>helper_T_cell_0_test.csv</code> in:<br>
-             • <code>data/</code> (next to app.R)<br>
-             • <code>inst/shiny/data/</code> (package root)<br>
+             • <code>data/</code><br>
+             • <code>inst/shiny/data/</code><br>
              • installed package via <code>system.file('shiny/data', ...)</code>"),
         easyClose = TRUE, footer = modalButton("OK")
       ))
@@ -309,7 +321,6 @@ server <- function(input, output, session) {
     }
     simulate_fileinput_display("data_in", "helper_T_cell_0_test.csv", duration_ms = 700)
     data_path(demo_abs); enable("submit")
-
     dt_head <- tryCatch(read.csv(demo_abs, row.names = 1,
                                  check.names = FALSE, nrows = 2000),
                         error = function(e) NULL)
@@ -324,10 +335,10 @@ server <- function(input, output, session) {
   })
 
   dt_submitted <- eventReactive(input$submit, {
+    clear_warn()
     read_current()
   })
 
-  # ---- NEW: one source of truth for log-scale matrix -------------------------
   log_mat <- reactive({
     dt <- dt_submitted()
     req(nrow(dt) > 0, ncol(dt) > 0)
@@ -337,7 +348,6 @@ server <- function(input, output, session) {
                      "Log with pseudocount" = "pseudocount")
     apply_transform(as.matrix(dt), method = method, pseudocount = 1e-6)
   })
-  # ----------------------------------------------------------------------------
 
   observeEvent(dt_submitted(), {
     h <- turning_alphas(log_mat())[[1]]
@@ -408,110 +418,127 @@ server <- function(input, output, session) {
     dt  <- dt_submitted()
     h   <- turning_alphas(log_mat())[[1]]
     rownames(h) <- colnames(dt)
-    data.frame(Sample = rownames(h), h, stringsAsFactors = FALSE)
+    dat <- data.frame(Sample = rownames(h), h, check.names = FALSE)
+    datatable(dat, options = list(pageLength = 10, scrollX = TRUE))
   })
 
   output$Gs <- DT::renderDataTable({
     dt <- dt_submitted()
     a  <- turning_alphas(log_mat())[[2]]
     rownames(a) <- rownames(dt)
-    data.frame(Gene = rownames(a), a, stringsAsFactors = FALSE)
+    dat <- data.frame(Gene = rownames(a), a, check.names = FALSE)
+    datatable(dat, options = list(pageLength = 10, scrollX = TRUE))
   })
 
-  output$GOPlot <- renderPlot({
-    dt  <- dt_submitted()
-    a   <- turning_alphas(log_mat())[[2]]
-    if (input$lambda1_check) a[,2] <- -a[,2]
-    kt  <- switch(input$data_type,
-                  "Ensembl"     = "ENSEMBL",
-                  "Entrez Id"   = "ENTREZID",
-                  "Gene Symbol" = "SYMBOL",
-                  "Probe Id"    = "PROBEID")
-    ids <- toupper(rownames(a))[a[,2] > quantile(a[,2], input$percentile_GO/100)]
+  map_keytype <- reactive({
+    switch(input$data_type,
+           "Ensembl"     = "ENSEMBL",
+           "Entrez Id"   = "ENTREZID",
+           "Gene Symbol" = "SYMBOL",
+           "Probe Id"    = "PROBEID")
+  })
+
+  species_db_obj <- reactive({
+    get(input$species_db)
+  })
+
+  run_go <- function(a, lambda_idx, percentile, terms_n) {
+    if (input$lambda1_check && lambda_idx == 2) a[,2] <- -a[,2]
+    ids <- toupper(rownames(a))[a[,lambda_idx] > quantile(a[,lambda_idx], percentile/100)]
+    if (length(ids) == 0) { set_warn("No genes passed the percentile cutoff. Try lowering the cutoff or checking the transformation."); return(NULL) }
+    db <- species_db_obj()
+    kt <- map_keytype()
     entrez <- tryCatch(
-      mapIds(org.Hs.eg.db, keys = ids, column = "ENTREZID", keytype = kt, multiVals = "first"),
-      error = function(e) NULL
+      mapIds(db, keys = ids, column = "ENTREZID", keytype = kt, multiVals = "first"),
+      error = function(e) NA
     )
+    if (all(is.na(entrez))) { set_warn("GO mapping failed for the selected ID type and species. Try switching ID type or species."); return(NULL) }
     entrez <- entrez[!is.na(entrez)]
-    if (length(entrez) > 0) {
-      GOres <- enrichGO(gene = entrez, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "BP")
-      if (nrow(GOres@result) > 0) {
-        df_top <- head(GOres@result, input$terms_1)
-        ggplot(df_top, aes(x = Description, y = Count, fill = p.adjust)) +
-          geom_bar(stat = "identity") + coord_flip() +
-          scale_fill_gradient(low = "#790915", high = "#062c5c") +
-          theme(panel.background = element_blank(),
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(colour = "black"),
-                axis.title.y = element_blank(),
-                plot.title = element_text(hjust = 0.5, size = 20),
-                text = element_text(size = 18))
-      }
-    }
+    if (!length(entrez)) { set_warn("No mappable genes for GO analysis after filtering. Try a different ID type, species, or cutoff."); return(NULL) }
+    GOres <- tryCatch(
+      enrichGO(gene = entrez, OrgDb = db, keyType = "ENTREZID",
+               ont = input$go_ont, pAdjustMethod = input$padj_method),
+      error = function(e) e
+    )
+    if (inherits(GOres, "error")) { set_warn("GO enrichment failed to run. Check the ID type/species and try again."); return(NULL) }
+    if (nrow(GOres@result) == 0) { set_warn("GO enrichment returned no significant terms. Consider adjusting the percentile or p-adjust method."); return(NULL) }
+    head(GOres@result, terms_n)
+  }
+
+  output$GOPlot <- renderPlot({
+    dt <- dt_submitted()
+    a  <- turning_alphas(log_mat())[[2]]
+    df_top <- run_go(a, lambda_idx = 2, percentile = input$percentile_GO, terms_n = input$terms_1)
+    req(!is.null(df_top))
+    clear_warn()
+    ggplot(df_top, aes(x = Description, y = Count, fill = p.adjust)) +
+      geom_bar(stat = "identity") + coord_flip() +
+      scale_fill_gradient(low = "#790915", high = "#062c5c") +
+      theme(panel.background = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_line(colour = "black"),
+            axis.title.y = element_blank(),
+            plot.title = element_text(hjust = 0.5, size = 20),
+            text = element_text(size = 18))
   })
 
   output$GOPlot_2 <- renderPlot({
-    dt  <- dt_submitted()
-    a   <- turning_alphas(log_mat())[[2]]
-    if (input$lambda1_check) a[,2] <- -a[,2]
-    kt  <- switch(input$data_type,
-                  "Ensembl"     = "ENSEMBL",
-                  "Entrez Id"   = "ENTREZID",
-                  "Gene Symbol" = "SYMBOL",
-                  "Probe Id"    = "PROBEID")
-    ids <- toupper(rownames(a))[a[,3] > quantile(a[,3], input$percentile_GO/100)]
-    entrez <- tryCatch(
-      mapIds(org.Hs.eg.db, keys = ids, column = "ENTREZID", keytype = kt, multiVals = "first"),
-      error = function(e) NULL
-    )
-    entrez <- entrez[!is.na(entrez)]
-    if (length(entrez) > 0) {
-      GOres <- enrichGO(gene = entrez, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "BP")
-      if (nrow(GOres@result) > 0) {
-        df_top <- head(GOres@result, input$terms_2)
-        ggplot(df_top, aes(x = Description, y = Count, fill = p.adjust)) +
-          geom_bar(stat = "identity") + coord_flip() +
-          scale_fill_gradient(low = "#790915", high = "#062c5c") +
-          theme(panel.background = element_blank(),
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                axis.line = element_line(colour = "black"),
-                axis.title.y = element_blank(),
-                plot.title = element_text(hjust = 0.5, size = 20),
-                text = element_text(size = 18))
-      }
-    }
+    dt <- dt_submitted()
+    a  <- turning_alphas(log_mat())[[2]]
+    df_top <- run_go(a, lambda_idx = 3, percentile = input$percentile_GO, terms_n = input$terms_2)
+    req(!is.null(df_top))
+    clear_warn()
+    ggplot(df_top, aes(x = Description, y = Count, fill = p.adjust)) +
+      geom_bar(stat = "identity") + coord_flip() +
+      scale_fill_gradient(low = "#790915", high = "#062c5c") +
+      theme(panel.background = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_line(colour = "black"),
+            axis.title.y = element_blank(),
+            plot.title = element_text(hjust = 0.5, size = 20),
+            text = element_text(size = 18))
   })
 
   output$stabPlot <- renderPlot({
+    dt <- dt_submitted()
+    if (is.null(dt) || !nrow(dt) || !ncol(dt)) return(NULL)
     res <- turning_alphas(log_mat())
-    h   <- res[[1]]; a <- res[[2]]
-    if (input$lambda1_check) h[,2] <- -h[,2]
-    df  <- data.frame(x = a[,1]*h[,1], y = a[,2]*h[,2])
+    h   <- res[[1]]
+    a   <- res[[2]]
 
-    ggplot(df, aes(x, y)) + geom_point(fill = "#76ABAE", color = "#76ABAE", shape = 8) +
-      xlab(TeX("$G_{0i}\\lambda_0$")) +
-      ylab(TeX("$G_{1i}\\lambda_1$")) +
+    if (input$lambda1_check) h[, 2] <- -h[, 2]
+
+    df <- data.frame(
+      x = a[, 1] * h[, 1],
+      y = a[, 2] * h[, 2]
+    )
+
+    ggplot(df, aes(x, y)) +
+      geom_point(fill = "#76ABAE", color = "#76ABAE", shape = 8) +
+      xlab(TeX("$G_{0i}\\,\\lambda_0$")) +
+      ylab(TeX("$G_{1i}\\,\\lambda_1$")) +
+      labs(title = TeX("Stable state stability")) +
       theme(panel.background = element_blank(),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             axis.line = element_line(colour = "black"),
             plot.title = element_text(hjust = 0.5, size = 20),
-            text = element_text(size = 18)) +
-      labs(tag = "F", title = TeX("Stable state stability"))
+            text = element_text(size = 18))
   })
+
 
   output$downloadData <- downloadHandler(
     filename = function() "lambdas.csv",
     content  = function(file) {
-      write.csv(turning_alphas(log_mat())[[1]], file)
+      write.csv(turning_alphas(log_mat())[[1]], file, row.names = TRUE)
     }
   )
   output$downloadData2 <- downloadHandler(
     filename = function() "weights.csv",
     content  = function(file) {
-      write.csv(turning_alphas(log_mat())[[2]], file)
+      write.csv(turning_alphas(log_mat())[[2]], file, row.names = TRUE)
     }
   )
 }
