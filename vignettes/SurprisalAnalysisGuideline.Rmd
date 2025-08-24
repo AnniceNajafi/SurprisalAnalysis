@@ -31,6 +31,63 @@ percentile_GO <- 0.95 #change based on your preference
 lambda_no <- 2 #change based on your preference, lambda #1 is the baseline state
 GO.results <- GO_analysis_surprisal_analysis(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Mm.eg.db", top_GO_terms=15)
 ```
+The function GO_analysis_surprisal_analysis() runs Gene Ontology (GO) enrichment on the most influential transcripts from a chosen Surprisal pattern. Below are the input arguments:
+
+<ul>
+<li><h5>transcript_weights</h5>
+A matrix of transcript weights, typically the second element ([[2]]) returned from the Surprisal analysis function.</li>
+
+<li><h5>percentile_GO</h5>
+A numeric value between 0 and 1 specifying the quantile cutoff for transcript selection.
+Example: 0.95 means only the top 5% of transcripts (by absolute weight) in the chosen $\lambda$ pattern are used.</li>
+
+<li><h5>lambda_no</h5>
+An integer specifying which $\lambda$ pattern to analyze.
+Note: $\lambda_1$ represents the balance state, while higher-order $\lambda$’s capture additional constraints or patterns.</li>
+
+<li><h5>key_type</h5>
+The type of transcript identifiers used in your data. Options include:
+
+"SYMBOL" (gene symbols, e.g. TP53),
+
+"ENTREZID" (Entrez gene IDs),
+
+"ENSEMBL" (Ensembl IDs),
+
+"PROBEID" (microarray probe IDs). This must match the ID format in your input dataset.</li>
+
+<li><h5>flip</h5>
+
+Logical (TRUE/FALSE). If TRUE, multiplies transcript weights for the selected $\lambda$ by –1 before selecting the top quantile.
+Useful for ensuring consistency with the direction of $\lambda$ plots.
+</li>
+
+<li>
+<h5>species.db.str</h5>
+The organism database to use for gene mapping. Current options:
+
+"org.Hs.eg.db" for Homo sapiens (human),
+
+"org.Mm.eg.db" for Mus musculus (mouse)</li>
+
+<li><h5>ont</h5>
+The GO ontology branch for enrichment analysis. Options:
+
+"BP" – Biological Process (default),
+
+"MF" – Molecular Function,
+
+"CC" – Cellular Component</li>
+
+<li><h5>pAdjustMethod</h5>
+The multiple testing correction method. Options include: "BH" (default), "bonferroni", "holm", "hochberg", "hommel", "BY", "none".</li>
+
+<li><h5>top_GO_terms</h5>
+An integer specifying the number of top enriched GO terms to return (default: 15).</li>
+
+
+
+
 ```{r}
 
 ggplot(GO.results, aes(x=Description, y=Count, fill=p.adjust))+geom_bar(stat="identity")+scale_fill_gradient(low = "#790915", high = "#062c5c")+theme_minimal()+
