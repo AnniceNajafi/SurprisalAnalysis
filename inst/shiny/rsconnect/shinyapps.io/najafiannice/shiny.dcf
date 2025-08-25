@@ -1,0 +1,12 @@
+name: shiny
+title: shiny
+username: najafiannice
+account: najafiannice
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15258863
+bundleId: 10813494
+url: https://najafiannice.shinyapps.io/shiny/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

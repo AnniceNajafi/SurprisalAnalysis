@@ -7,6 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup, include=FALSE}
+has_peakram <- requireNamespace("peakRAM", quietly = TRUE)
+```
 
 ```{r}
 # Load relevant libraries
@@ -15,6 +18,7 @@ library(ggplot2)
 library(peakRAM)
 ```
 
+Please uncomment the below and run
 
 ```{r}
 #setting seed to ensure reproducibility
@@ -23,7 +27,7 @@ set.seed(123)
 #params
 n_genes       <- 1000
 sample_counts <- c(5, 10, 20, 50, 100)
-n_reps        <- 100
+n_reps        <- 3
 
 
 #' Function records run time and RAM peak usage
@@ -181,7 +185,7 @@ ggplot(df_plot, aes(x = n_samples, y = mean_ram_plot)) +
 #params
 n_samples_fixed <- 50
 gene_counts     <- c(100, 500, 1000, 2000, 5000)
-n_reps          <- 100
+n_reps          <- 3
 
 
 results_genes_df <- data.frame(
@@ -248,7 +252,7 @@ ggplot(results_genes_df, aes(x = n_genes, y = mean_time)) +
     ),
     tag = "C"
   ) +
-  theme_minimal(base_size = 12) 
+  theme_minimal(base_size = 12)
 ```
 
 ```{r}
