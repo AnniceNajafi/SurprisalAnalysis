@@ -3,10 +3,20 @@
 #' @param input.data transcriptomics data stores as dataframe
 #' @param zero.handling zero handling method. Can be either 'pseudocount' or
 #' 'log1p'. By default it is set to 'pseudocount'.
-#' @return a list containing the lambda values and corresponding weights of
-#' transcripts stored
+#' @return a list containing two matrix array objects, first one holding the
+#' lambda values representing the constraints or Lagrange multipliers and the
+#' second one holding the corresponding weights of transcripts stored (G matrix)
 #' @importFrom matlib inv
-#' @export
+#' @examples
+#' expr.df <- data.frame(gene_id = paste0("Gene", 1:6),
+#' S1 = c(0, 12, 3, 0, 50, 7),
+#' S2 = c(5, 0, 2, 9, 0, 4),
+#' S3 = c(8, 15, 0, 1, 25, 0),
+#' S4 = c(0, 7, 6, 0, 40, 3),
+#' check.names = FALSE)
+#' surprisal_analysis(expr.df, zero.handling = "pseudocount")
+#'
+#' @export surprisal_analysis
 surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 
 
@@ -128,7 +138,31 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #' @importFrom clusterProfiler enrichGO
 #' @importFrom stats quantile
 #' @importFrom utils head
-#' @export
+#' @examples
+#'
+#' csv.path <- system.file(
+#'   "extdata", "helper_T_cell_0_test.csv",
+#'   package = "SurprisalAnalysis"
+#' )
+#'
+#' expr.df <- utils::read.csv(csv.path, check.names = FALSE)
+#'
+#' sa.res <- surprisal_analysis(expr.df, zero.handling = "log1p")
+#' alph.all <- sa_res[[2]]
+#'
+#' go_top <- GO_analysis_surprisal_analysis(
+#'     transcript_weights = alph.all,
+#'     percentile_GO      = 95,
+#'     lambda_no          = "lambda_1",
+#'     key_type           = "SYMBOL",
+#'     flip               = FALSE,
+#'     species.db.str     = "org.Hs.eg.db",
+#'     ont                = "BP",
+#'     pAdjustMethod      = "BH",
+#'     top_GO_terms       = 15
+#'     )
+#'
+#' @export GO_analysis_surprisal_analysis
 GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db",
                                            ont = "BP", pAdjustMethod = "BH", top_GO_terms=15){
 

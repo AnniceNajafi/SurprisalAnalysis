@@ -1,10 +1,10 @@
 Package: SurprisalAnalysis
-Title: Information theoretic analysis of gene expression data
+Title: Information Theoretic Analysis of Gene Expression Data
 Version: 0.2
 Authors@R: 
     person("Annice", "Najafi", , "annicenajafi27@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0679-9397"))
-Description: This package applies surprisal analysis on transcriptomics data.
+Description: Implements Surprisal Analysis for gene expression data such as RNA-seq or microarray experiments. Surprisal Analysis is an information-theoretic method that decomposes gene expression data into a baseline state and constraint-associated deviations, which helps to capture coordinated gene expression patterns under different biological conditions. References where Surprisal analysis has been used for analyzing gene expression data (using the same methodology provided within this R package) are Kravchenko-Balasha et al (2014) <doi:10.1371/journal.pone.0108549>, Zadran et al. (2014) <doi:10.1073/pnas.1414714111>, Su et al. (2019) <doi:10.1371/journal.pcbi.1007034>, Bogaert et al. (2018) <doi:10.1371/journal.pone.0195142>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
