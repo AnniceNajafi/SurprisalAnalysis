@@ -2,7 +2,7 @@
 #'
 #' @param input.data transcriptomics data stores as dataframe
 #' @param zero.handling zero handling method. Can be either 'pseudocount' or
-#' 'log1p'. By default it is set to 'pseudocount'.
+#' 'log1p'. By default it is set to 'pseudocount'
 #' @return a list containing two matrix array objects, first one holding the
 #' lambda values representing the constraints or Lagrange multipliers and the
 #' second one holding the corresponding weights of transcripts stored (G matrix)
@@ -124,14 +124,14 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #' @param flip a boolean variable which can either be true or false, if it is
 #' set to true, the lambda values will be multiplied by -1
 #' @param species.db.str the type of species used for GO analysis, by default set to
-#' Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'.
+#' Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'
 #' @param ont the ontology term for GO enrichment analysis. Can be either "BP", "MF" or "CC".
 #' They stand for "Biological Process", "Molecular Function" or "Cellular Component". Set to "BP" by default
 #' @param pAdjustMethod multiple testing correction method. Could be one of "BH", "bonferroni",
-#' "holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH".
+#' "holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH"
 #' @param top_GO_terms number of GO terms returns, by default set to 15
 #'
-#' @return the important GO terms related to a lambda gene pattern
+#' @return dataframe, the important GO terms related to a lambda gene pattern
 #' @import org.Hs.eg.db
 #' @import org.Mm.eg.db
 #' @importFrom AnnotationDbi mapIds
@@ -148,7 +148,7 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #' expr.df <- utils::read.csv(csv.path, check.names = FALSE)
 #'
 #' sa.res <- surprisal_analysis(expr.df, zero.handling = "log1p")
-#' alph.all <- sa_res[[2]]
+#' alph.all <- sa.res[[2]]
 #'
 #' go_top <- GO_analysis_surprisal_analysis(
 #'     transcript_weights = alph.all,

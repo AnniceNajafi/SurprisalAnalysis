@@ -32,19 +32,44 @@ ENSEMBL, or PROBEID}
 set to true, the lambda values will be multiplied by -1}
 
 \item{species.db.str}{the type of species used for GO analysis, by default set to
-Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'.}
+Homo sapiens, can be either 'org.Hs.eg.db' or 'org.Mm.eg.db'}
 
 \item{ont}{the ontology term for GO enrichment analysis. Can be either "BP", "MF" or "CC".
 They stand for "Biological Process", "Molecular Function" or "Cellular Component". Set to "BP" by default}
 
 \item{pAdjustMethod}{multiple testing correction method. Could be one of "BH", "bonferroni",
-"holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH".}
+"holm", "hochberg", "hommel", "BY", or "none". The default setting is "BH"}
 
 \item{top_GO_terms}{number of GO terms returns, by default set to 15}
 }
 \value{
-the important GO terms related to a lambda gene pattern
+dataframe, the important GO terms related to a lambda gene pattern
 }
 \description{
 Perform Gene ontology analysis on a pattern of interest
+}
+\examples{
+
+csv.path <- system.file(
+  "extdata", "helper_T_cell_0_test.csv",
+  package = "SurprisalAnalysis"
+)
+
+expr.df <- utils::read.csv(csv.path, check.names = FALSE)
+
+sa.res <- surprisal_analysis(expr.df, zero.handling = "log1p")
+alph.all <- sa.res[[2]]
+
+go_top <- GO_analysis_surprisal_analysis(
+    transcript_weights = alph.all,
+    percentile_GO      = 95,
+    lambda_no          = "lambda_1",
+    key_type           = "SYMBOL",
+    flip               = FALSE,
+    species.db.str     = "org.Hs.eg.db",
+    ont                = "BP",
+    pAdjustMethod      = "BH",
+    top_GO_terms       = 15
+    )
+
 }

@@ -28,4 +28,5 @@ Imports:
   shinyjs,
   shinycssloaders,
   patchwork,
-  DT
+  DT,
+  httpuv

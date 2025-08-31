@@ -8,6 +8,7 @@ runSurprisalApp(
   port = getOption("shiny.port", 3838),
   host = getOption("shiny.host", "127.0.0.1"),
   launch.browser = getOption("shiny.launch.browser", TRUE),
+  run = TRUE,
   ...
 )
 }
@@ -18,8 +19,18 @@ runSurprisalApp(
 
 \item{launch.browser}{should launch a browser? set to TRUE by default}
 
+\item{run}{boolean value, is set to TRUE by default. If set to FALSE it will not launch the graphical user interface}
+
 \item{...}{Further arguments passed along to shiny::runApp}
+}
+\value{
+no return value, running the function will launch an application with graphical user interface
 }
 \description{
 Launch the SurprisalAnalysis Shiny App
+}
+\examples{
+
+runSurprisalApp(port = httpuv::randomPort(), run = FALSE)
+
 }
