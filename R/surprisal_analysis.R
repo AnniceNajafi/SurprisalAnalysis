@@ -146,13 +146,13 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #' )
 #'
 #' expr.df <- utils::read.csv(csv.path, check.names = FALSE)
-#'
+#' expr.df[1:700,]->expr.df
 #' sa.res <- surprisal_analysis(expr.df, zero.handling = "log1p")
 #' alph.all <- sa.res[[2]]
 #'
 #' go_top <- GO_analysis_surprisal_analysis(
 #'     transcript_weights = alph.all,
-#'     percentile_GO      = 95,
+#'     percentile_GO      = 99,
 #'     lambda_no          = "lambda_1",
 #'     key_type           = "SYMBOL",
 #'     flip               = FALSE,
