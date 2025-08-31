@@ -149,7 +149,7 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #' expr.df[1:700,]->expr.df
 #' sa.res <- surprisal_analysis(expr.df, zero.handling = "log1p")
 #' alph.all <- sa.res[[2]]
-#'
+#' \donttest{
 #' go_top <- GO_analysis_surprisal_analysis(
 #'     transcript_weights = alph.all,
 #'     percentile_GO      = 99,
@@ -161,7 +161,7 @@ surprisal_analysis <- function(input.data, zero.handling = 'pseudocount'){
 #'     pAdjustMethod      = "BH",
 #'     top_GO_terms       = 15
 #'     )
-#'
+#' }
 #' @export GO_analysis_surprisal_analysis
 GO_analysis_surprisal_analysis <- function(transcript_weights, percentile_GO, lambda_no, key_type = "SYMBOL", flip = FALSE, species.db.str =  "org.Hs.eg.db",
                                            ont = "BP", pAdjustMethod = "BH", top_GO_terms=15){
