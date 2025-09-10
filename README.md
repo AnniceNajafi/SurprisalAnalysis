@@ -2,8 +2,12 @@
 
 <h2>🖥️ Installation </h2>
 
-To install the R package:
+To install the R package, either download directly from CRAN or through Github using Devtools:
 
+```
+install.packages('SurprisalAnalysis')
+```
+Install through Github:
 ```
 install.packages('devtools')
 devtools::install_github('AnniceNajafi/SurprisalAnalysis')
